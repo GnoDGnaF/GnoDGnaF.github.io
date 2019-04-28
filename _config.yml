@@ -1,0 +1,16 @@
+# Site settings
+title: GnoDGnaF
+email: gnodgnaf@gmail.com
+description: > # this means to ignore newlines until "baseurl:"
+  业精于勤荒于嬉；行成于思毁于随。
+copyright: >
+  本站所有内容的版权归作者所有，如需转载和使用请与作者联系，
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://GnoDGnaF.github.io" # the base hostname & protocol for your site
+twitter_username: 
+github_username:  GnoDGnaF
+
+# Build settings
+markdown: kramdown
+comments: true
+permalink: :title.html

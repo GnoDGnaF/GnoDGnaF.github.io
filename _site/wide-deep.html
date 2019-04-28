@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Wide & Deep Learning for Recommender Systems (2016)</title>
+    <meta name="description" content="业精于勤荒于嬉；行成于思毁于随。
+">
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://localhost:4000/wide-deep.html">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-117320993-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-117320993-1');
+</script>
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">GnoDGnaF</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"
+          />
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"
+          />
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"
+          />
+        </svg>
+      </a>
+
+      <div class="trigger">
+         
+        <a class="page-link" href="/papers/">论文</a>
+               
+      </div>
+    </nav>
+
+  </div>
+</header>
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Wide & Deep Learning for Recommender Systems (2016)</h1>
+    <p class="post-meta">Dec 2, 2018</p>
+  </header>
+
+  <article class="post-content">
+    <blockquote>
+  <p>In this paper, we present Wide &amp; Deep learning — <strong>jointly trained</strong> wide linear models and deep neural networks — to combine the benefits of memorization and generalization for recommender systems.</p>
+</blockquote>
+
+<p><a href="chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=https%3A%2F%2Farxiv.org%2Fpdf%2F1606.07792.pdf">hypothesis</a></p>
+
+<h3 id="1-推荐系统简介">1. 推荐系统简介</h3>
+
+<p>一个完整的推荐系统主要分为两个部分：<strong>retrieval</strong>和<strong>ranking</strong>，如图1所示（The retrieval system returns <font color="blue">a short list of items that best match the query using various signals</font> , usually a combination of machine-learned models and human-defined rules; <font color="red">the ranking system ranks all items by their scores</font>）。</p>
+
+<center>
+<img src="../img/wide-deep/00-overview.png" style="width:70%;height:70%;" />  
+<br />
+图1 Overview of the recommender system 
+</center>
+<p><br /></p>
+
+<h3 id="2-wide--deep-learning">2. WIDE &amp; DEEP LEARNING</h3>
+
+<p>该论文提出了一种用于<strong>ranking</strong>模块的<code class="highlighter-rouge">Wide &amp; Deep learning framework</code>，如图2所示。</p>
+
+<center>
+<img src="../img/wide-deep/02-wide-deep.png" style="width:100%;height:100%;" />  
+<br />
+图2 The spectrum of Wide &amp; Deep models
+</center>
+<p><br /></p>
+
+<p>该框架包括两个部分：<code class="highlighter-rouge">Wide Component</code>和<code class="highlighter-rouge">Deep Component</code>。那么，为什么需要这两个部分呢？论文中给出了解释：</p>
+
+<ul>
+  <li>Memorization of feature interactions through a <strong><em>wide</em></strong> set of cross-product feature transformations are <font color="blue">effective and interpretable</font>, while generalization requires more feature engineering effort</li>
+  <li>With less feature engineering, <strong><em>deep</em></strong> neural networks can <font color="blue">generalize better to unseen feature combinations through low-dimensional dense embeddings learned for the sparse features</font></li>
+</ul>
+
+<p>另外，在整个框架中，<code class="highlighter-rouge">Wide Component</code>和<code class="highlighter-rouge">Deep Component</code>进行<strong>joint training</strong>，即两者的结果输入到一个logistic loss function中，如图3所示，因此在训练过程中同时更新各自的参数。</p>
+
+<center>
+<img src="../img/wide-deep/04-equation.png" style="width:60%;height:60%;" />  
+<br />
+图3 Wide &amp; Deep model
+</center>
+<p><br /></p>
+
+<p>该论文以Apps推荐为例，给出了Wide &amp; Deep model的落地方案。图4为该Apps推荐系统的pipeline，主要包括<code class="highlighter-rouge">Data Generation</code>、<code class="highlighter-rouge">Model Training</code>以及<code class="highlighter-rouge">Model Serving</code>这三个部分：</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Data Generation</code>：用于生成训练数据</li>
+  <li><code class="highlighter-rouge">Model Training</code>：模型训练，模型的具体结构如图5所示</li>
+  <li><code class="highlighter-rouge">Model Serving</code>：模型部署（响应时间为10 ms左右）</li>
+</ul>
+
+<center>
+<img src="../img/wide-deep/01-pipeline.png" style="width:60%;height:60%;" />  
+<br />
+图4 Apps recommendation pipeline overview
+</center>
+<p><br /></p>
+
+<center>
+<img src="../img/wide-deep/03-model.png" style="width:60%;height:60%;" />  
+<br />
+图5 Wide &amp; Deep model structure for apps recommendation
+</center>
+<p><br /></p>
+
+<p>图6展示了<code class="highlighter-rouge">Offline AUC/Online Acquisition Gain</code>的实验结果。</p>
+
+<center>
+<img src="../img/wide-deep/05-result.png" style="width:60%;height:60%;" />  
+<br />
+图6 Offline &amp; online metrics of different models
+</center>
+<p><br /></p>
+
+<p>有意思的是<code class="highlighter-rouge">Deep</code>的<code class="highlighter-rouge">Offline AUC</code>比<code class="highlighter-rouge">Wide</code>要低，但是其<code class="highlighter-rouge">Online Acquisition Gain</code>比<code class="highlighter-rouge">Wide</code>要高2.9%。对于这一现象可能有几种解释：</p>
+<ul>
+  <li>相比<code class="highlighter-rouge">Deep</code>，<code class="highlighter-rouge">Wide</code>更易在Offline的数据集上过度学习，即<code class="highlighter-rouge">overfit</code></li>
+  <li>Offline metrics与Online metrics不线性相关</li>
+</ul>
+
+<p>总之，如何设计Offline metrics或者offline测试也是一个重要的研究课题。</p>
+
+<p>图7展示了<code class="highlighter-rouge">Serving Latency</code>的实验结果，显然，<code class="highlighter-rouge">Serving Latency</code>主要依赖于Batch size和Number of Threads。</p>
+
+<center>
+<img src="../img/wide-deep/06-serve.png" style="width:60%;height:60%;" />  
+<br />
+图7 Serving latency
+</center>
+<p><br /></p>
+
+<h3 id="3-总结">3. 总结</h3>
+
+<ul>
+  <li><code class="highlighter-rouge">Wide &amp; Deep model structure</code>：在<code class="highlighter-rouge">Wide</code>的基础上，引入<code class="highlighter-rouge">Deep</code>模块用于特征提取（Wide linear models can effectively <strong>memorize sparse feature interactions</strong> using cross-product feature transformations; deep neural networks can <strong>generalize to previously unseen feature interactions</strong> through low-dimensional embeddings）</li>
+  <li><code class="highlighter-rouge">joint training</code>：与ensemble和stacking等模型训练方式相比，<code class="highlighter-rouge">joint training</code>是一种新颖的模型训练方式</li>
+</ul>
+
+  </article>
+
+</div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+
+const gitment = new Gitment({
+  id: location.pathname,
+  owner: 'GnoDGnaF',
+  repo: 'GnoDGnaF.github.io',
+  oauth: {
+    client_id: 'f12d331d02e406bbc555',
+    client_secret: '6828bf6455b730e5e6bcea315d9583ee0e02f847',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments');
+
+</script>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!--h2 class="footer-heading">GnoDGnaF</h2-->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        <p class="copyright">
+		(c) Copyright all right reserved. <br>
+		本站所有内容的版权归作者所有，如需转载和使用请与作者联系，
+
+		</p>
+      </div>
+
+      <div class="footer-col  footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/GnoDGnaF">
+              <span class="icon  icon--github">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/>
+                </svg>
+              </span>
+
+              <span class="username">GnoDGnaF</span>
+            </a>
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-3">
+        <p class="text">业精于勤荒于嬉；行成于思毁于随。
+</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript">
+MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+</script>
+
+
+  </body>
+
+</html>

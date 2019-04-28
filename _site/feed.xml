@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>GnoDGnaF</title>
+    <description>业精于勤荒于嬉；行成于思毁于随。
+</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Mon, 29 Apr 2019 00:08:12 +0800</pubDate>
+    <lastBuildDate>Mon, 29 Apr 2019 00:08:12 +0800</lastBuildDate>
+    <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>DeepFM: A Factorization-Machine based Neural Network for CTR Prediction (2017)</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;In this paper, we show that it is possible to derive an &lt;strong&gt;end-to-end&lt;/strong&gt; learning model that emphasizes both &lt;strong&gt;low-&lt;/strong&gt; and &lt;strong&gt;high-&lt;/strong&gt; order feature interactions. The proposed model, &lt;strong&gt;DeepFM&lt;/strong&gt;, combines the power of factorization machines for recommendation and deep learning for feature learning in a new neural network architecture.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=https%3A%2F%2Farxiv.org%2Fpdf%2F1703.04247.pdf&quot;&gt;hypothesis&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;1-deepfm&quot;&gt;1. DeepFM&lt;/h3&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/00-deepfm.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图1 Wide &amp;amp; deep architecture of DeepFM
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;为了学习&lt;code class=&quot;highlighter-rouge&quot;&gt;low-order&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;high-order&lt;/code&gt;的feature interactions，该论文提出了一种Factorization-Machine based neural network (&lt;strong&gt;DeepFM&lt;/strong&gt;)，其包括两个模块：&lt;code class=&quot;highlighter-rouge&quot;&gt;FM component&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;deep component&lt;/code&gt;，如图1所示。其中&lt;code class=&quot;highlighter-rouge&quot;&gt;FM component&lt;/code&gt;用于学习low-order feature interactions，而&lt;code class=&quot;highlighter-rouge&quot;&gt;deep component&lt;/code&gt;用于学习high-order feature interactions，与&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide &amp;amp; Deep&lt;/code&gt;模型类似，这两个模块也是&lt;code class=&quot;highlighter-rouge&quot;&gt;joint training&lt;/code&gt;：&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/04-equation.png&quot; style=&quot;width:35%;height:35%;&quot; /&gt;  
+&lt;br /&gt;
+图2 DeepFM joint training
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;fm-component&quot;&gt;FM Component&lt;/h4&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/01-fm.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图3 The architecture of FM
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;FM component&lt;/code&gt;就是一个factorization machine，如图3所示，其包括两个计算单元：&lt;strong&gt;Addition unit&lt;/strong&gt;和&lt;strong&gt;Inner Product units&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Addition units：作用于Sparse Feature上&lt;/li&gt;
+  &lt;li&gt;Inner Product units：作用于Dense Embeddings上&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;deep-component&quot;&gt;Deep Component&lt;/h4&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/02-deep.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图4 The architecture of DNN
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;deep component&lt;/code&gt;是一个feed-forward neural network，如图4所示，其用于学习high-order feature interactions。在该DNN结构中，为了处理具有超高维、稀疏、categorical-continuous-mixed等特点的raw feature，需要添加一层embedding layer，将raw feature转变为一个low-dimensional、dense real-value vector。&lt;/p&gt;
+
+&lt;p&gt;需要注意的是，与tensorflow的embedding实现不同（&lt;code class=&quot;highlighter-rouge&quot;&gt;tf.feature_column.embedding_column(col)&lt;/code&gt;），该模型使用FM的latent feature vectors作为参数计算最终的结果，如图5所示：&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/07-embedding.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图5 The structure of the embedding layer
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;另外，由图3和图4可知，&lt;code class=&quot;highlighter-rouge&quot;&gt;FM component&lt;/code&gt;与&lt;code class=&quot;highlighter-rouge&quot;&gt;deep component&lt;/code&gt;共享embedding layer，这么做的好处是：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;it learns both low- and high-order feature interactions from raw feature&lt;/li&gt;
+  &lt;li&gt;there is no need for ex- pertise feature engineering of the input, as required in Wide &amp;amp; Deep&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;2-其他相关neural-networks&quot;&gt;2. 其他相关Neural Networks&lt;/h3&gt;
+
+&lt;p&gt;在DeepFM之前，也有一些deep models用于CTR预测的报道，如图6所示：&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/03-other.png&quot; style=&quot;width:100%;height:100%;&quot; /&gt;  
+&lt;br /&gt;
+图6 The architectures of existing deep models for CTR prediction: FNN, PNN, Wide &amp;amp; Deep Model
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;FNN&lt;/code&gt;：一个FM-initialized feed-forward neural network，图6(左)所示&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;PNN&lt;/code&gt;：与FNN类似，只不过在embedding layer与the first hidden layer中间添加了一层product layer，图6(中)所示&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide &amp;amp; Deep&lt;/code&gt;：能够同时对low- and high-order feature interactions进行学习的feed-forward neural network，图6(右)所示&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;由图6可知，各模型的重点都是研究如何处理大规模稀疏特征，即模型输入，而模型的结构都较为简单。&lt;/p&gt;
+
+&lt;h3 id=&quot;3-实验&quot;&gt;3. 实验&lt;/h3&gt;
+&lt;p&gt;该论文从计算复杂度和效果两个角度对各模型进行评测：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Efficiency Comparison&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/05-time.png&quot; style=&quot;width:80%;height:80%;&quot; /&gt;  
+&lt;br /&gt;
+图7 Time comparison
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Effectiveness Comparison&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DeepFM/06-result.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图8 Performance on CTR prediction
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;结果显示，无论在计算复杂度以及模型效果上，DeepFM均占优。&lt;/p&gt;
+
+&lt;p&gt;另外，论文还对模型的Hyper-Parameters进行了实验，如Activation Function、Number of Neurons per Layer、Number of Hidden Layers和Network Shape等。&lt;/p&gt;
+
+&lt;h3 id=&quot;4-总结&quot;&gt;4. 总结&lt;/h3&gt;
+
+&lt;p&gt;该论文给出了DeepFM在计算复杂度以及模型效果上获得提升的原因：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;it does not need any pre-training&lt;/li&gt;
+  &lt;li&gt;it learns both high- and low-order feature interactions&lt;/li&gt;
+  &lt;li&gt;it introduces a sharing strategy of feature embedding to avoid feature engineering&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sat, 15 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/DeepFM.html</link>
+        <guid isPermaLink="true">http://localhost:4000/DeepFM.html</guid>
+        
+        
+        <category>papers</category>
+        
+      </item>
+    
+      <item>
+        <title>Wide &amp; Deep Learning for Recommender Systems (2016)</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;In this paper, we present Wide &amp;amp; Deep learning — &lt;strong&gt;jointly trained&lt;/strong&gt; wide linear models and deep neural networks — to combine the benefits of memorization and generalization for recommender systems.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=https%3A%2F%2Farxiv.org%2Fpdf%2F1606.07792.pdf&quot;&gt;hypothesis&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;1-推荐系统简介&quot;&gt;1. 推荐系统简介&lt;/h3&gt;
+
+&lt;p&gt;一个完整的推荐系统主要分为两个部分：&lt;strong&gt;retrieval&lt;/strong&gt;和&lt;strong&gt;ranking&lt;/strong&gt;，如图1所示（The retrieval system returns &lt;font color=&quot;blue&quot;&gt;a short list of items that best match the query using various signals&lt;/font&gt; , usually a combination of machine-learned models and human-defined rules; &lt;font color=&quot;red&quot;&gt;the ranking system ranks all items by their scores&lt;/font&gt;）。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/00-overview.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图1 Overview of the recommender system 
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;2-wide--deep-learning&quot;&gt;2. WIDE &amp;amp; DEEP LEARNING&lt;/h3&gt;
+
+&lt;p&gt;该论文提出了一种用于&lt;strong&gt;ranking&lt;/strong&gt;模块的&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide &amp;amp; Deep learning framework&lt;/code&gt;，如图2所示。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/02-wide-deep.png&quot; style=&quot;width:100%;height:100%;&quot; /&gt;  
+&lt;br /&gt;
+图2 The spectrum of Wide &amp;amp; Deep models
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;该框架包括两个部分：&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide Component&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;Deep Component&lt;/code&gt;。那么，为什么需要这两个部分呢？论文中给出了解释：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Memorization of feature interactions through a &lt;strong&gt;&lt;em&gt;wide&lt;/em&gt;&lt;/strong&gt; set of cross-product feature transformations are &lt;font color=&quot;blue&quot;&gt;effective and interpretable&lt;/font&gt;, while generalization requires more feature engineering effort&lt;/li&gt;
+  &lt;li&gt;With less feature engineering, &lt;strong&gt;&lt;em&gt;deep&lt;/em&gt;&lt;/strong&gt; neural networks can &lt;font color=&quot;blue&quot;&gt;generalize better to unseen feature combinations through low-dimensional dense embeddings learned for the sparse features&lt;/font&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;另外，在整个框架中，&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide Component&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;Deep Component&lt;/code&gt;进行&lt;strong&gt;joint training&lt;/strong&gt;，即两者的结果输入到一个logistic loss function中，如图3所示，因此在训练过程中同时更新各自的参数。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/04-equation.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图3 Wide &amp;amp; Deep model
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;该论文以Apps推荐为例，给出了Wide &amp;amp; Deep model的落地方案。图4为该Apps推荐系统的pipeline，主要包括&lt;code class=&quot;highlighter-rouge&quot;&gt;Data Generation&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;Model Training&lt;/code&gt;以及&lt;code class=&quot;highlighter-rouge&quot;&gt;Model Serving&lt;/code&gt;这三个部分：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Data Generation&lt;/code&gt;：用于生成训练数据&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Model Training&lt;/code&gt;：模型训练，模型的具体结构如图5所示&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Model Serving&lt;/code&gt;：模型部署（响应时间为10 ms左右）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/01-pipeline.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图4 Apps recommendation pipeline overview
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/03-model.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图5 Wide &amp;amp; Deep model structure for apps recommendation
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;图6展示了&lt;code class=&quot;highlighter-rouge&quot;&gt;Offline AUC/Online Acquisition Gain&lt;/code&gt;的实验结果。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/05-result.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图6 Offline &amp;amp; online metrics of different models
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;有意思的是&lt;code class=&quot;highlighter-rouge&quot;&gt;Deep&lt;/code&gt;的&lt;code class=&quot;highlighter-rouge&quot;&gt;Offline AUC&lt;/code&gt;比&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide&lt;/code&gt;要低，但是其&lt;code class=&quot;highlighter-rouge&quot;&gt;Online Acquisition Gain&lt;/code&gt;比&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide&lt;/code&gt;要高2.9%。对于这一现象可能有几种解释：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;相比&lt;code class=&quot;highlighter-rouge&quot;&gt;Deep&lt;/code&gt;，&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide&lt;/code&gt;更易在Offline的数据集上过度学习，即&lt;code class=&quot;highlighter-rouge&quot;&gt;overfit&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Offline metrics与Online metrics不线性相关&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;总之，如何设计Offline metrics或者offline测试也是一个重要的研究课题。&lt;/p&gt;
+
+&lt;p&gt;图7展示了&lt;code class=&quot;highlighter-rouge&quot;&gt;Serving Latency&lt;/code&gt;的实验结果，显然，&lt;code class=&quot;highlighter-rouge&quot;&gt;Serving Latency&lt;/code&gt;主要依赖于Batch size和Number of Threads。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/wide-deep/06-serve.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图7 Serving latency
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;3-总结&quot;&gt;3. 总结&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide &amp;amp; Deep model structure&lt;/code&gt;：在&lt;code class=&quot;highlighter-rouge&quot;&gt;Wide&lt;/code&gt;的基础上，引入&lt;code class=&quot;highlighter-rouge&quot;&gt;Deep&lt;/code&gt;模块用于特征提取（Wide linear models can effectively &lt;strong&gt;memorize sparse feature interactions&lt;/strong&gt; using cross-product feature transformations; deep neural networks can &lt;strong&gt;generalize to previously unseen feature interactions&lt;/strong&gt; through low-dimensional embeddings）&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;joint training&lt;/code&gt;：与ensemble和stacking等模型训练方式相比，&lt;code class=&quot;highlighter-rouge&quot;&gt;joint training&lt;/code&gt;是一种新颖的模型训练方式&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sun, 02 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/wide-deep.html</link>
+        <guid isPermaLink="true">http://localhost:4000/wide-deep.html</guid>
+        
+        
+        <category>papers</category>
+        
+      </item>
+    
+      <item>
+        <title>Factorization Machines (2010)</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;In this paper, we introduce &lt;strong&gt;Factorization Machines (FM)&lt;/strong&gt; which are a new model class that &lt;strong&gt;combines&lt;/strong&gt; the advantages of Support Vector Machines (SVM) with factorization models.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=https%3A%2F%2Fwww.csie.ntu.edu.tw%2F~b97053%2Fpaper%2FRendle2010FM.pdf&quot;&gt;hypothesis&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;1-factorization-machines-fm&quot;&gt;1. FACTORIZATION MACHINES (FM)&lt;/h3&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/FM/00-model.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图1 Factorization Machine Model Equation(d = 2) 
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+由图1可知，FM主要由两个部分构成：&lt;strong&gt;线性部分&lt;/strong&gt;和&lt;strong&gt;特征交叉部分&lt;/strong&gt;，其中&lt;strong&gt;特征交叉部分&lt;/strong&gt;参数的学习是FM的关键。&lt;/p&gt;
+
+&lt;h4 id=&quot;forward&quot;&gt;&lt;strong&gt;forward&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在对FM进行forward时，可以发现，特征交叉部分的计算复杂度为O(kn^2)，远高于线性部分。但通过对其进行展开化简后，可将复杂度降低为O(kn)，计算过程如图2所示。&lt;/p&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/FM/01-reformulate.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图2 简化pairwise interactions 
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;backward&quot;&gt;&lt;strong&gt;backward&lt;/strong&gt;&lt;/h4&gt;
+&lt;p&gt;在使用SGD进行参数更新时，需要计算各参数的对应梯度（链式法则求导），其计算过程如图3所示。&lt;/p&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/FM/02-backward.png&quot; style=&quot;width:65%;height:65%;&quot; /&gt;  
+&lt;br /&gt;
+图3 gradient of the FM 
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;通过以上分析，可得出FM的特点如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The interactions between values can be estimated even under &lt;strong&gt;high sparsity&lt;/strong&gt;. Especially, it is possible to generalize to unobserved interactions.&lt;/li&gt;
+  &lt;li&gt;The number of parameters as well as the time for prediction and learning is &lt;strong&gt;linear&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;2-fms-vs-svms&quot;&gt;2. FMs VS. SVMs&lt;/h3&gt;
+
+&lt;p&gt;FMs与SVMs的异同点如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The dense parametrization of SVMs requires direct observations for the interactions which is often not given in sparse settings. Parameters of FMs can be estimated well even under sparsity.&lt;/li&gt;
+  &lt;li&gt;FMs can be directly learned in the primal. Non-linear SVMs are usually learned in the dual.&lt;/li&gt;
+  &lt;li&gt;The model equation of FMs is independent of the training data. Prediction with SVMs depends on parts of the training data (the support vectors).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;3-fms-vs-other-factorization-models&quot;&gt;3. FMs VS. OTHER FACTORIZATION MODELS&lt;/h3&gt;
+
+&lt;p&gt;FMs与factorization models的异同点如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Standard factorization models like PARAFAC or MF are not general prediction models like factorization machines. Instead they require that the feature vector is partitioned in m parts and that in each part exactly one element is 1 and the rest 0.&lt;/li&gt;
+  &lt;li&gt;There are many proposals for specialized factorization models designed for a single task. We have shown that factorization machines can mimic many of the most successful factorization models just by feature extraction which makes FM easily applicable in practice.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;4-总结&quot;&gt;4. 总结&lt;/h3&gt;
+
+&lt;p&gt;在FM中能够看到SVM和factorization model的影子，如SVM中的feature interaction，以及factorization model的factorization parametrization，为大规模稀疏特征学习提供了一种思路。&lt;/p&gt;
+</description>
+        <pubDate>Sat, 24 Nov 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/FM.html</link>
+        <guid isPermaLink="true">http://localhost:4000/FM.html</guid>
+        
+        
+        <category>papers</category>
+        
+      </item>
+    
+      <item>
+        <title>Practical Lessons from Predicting Clicks on Ads at Facebook (2014)</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;In this paper we introduce a model which &lt;strong&gt;combines decision trees with logistic regression&lt;/strong&gt;, outperforming either of these methods on its own by over &lt;strong&gt;3%&lt;/strong&gt;, an improvement with significant impact to the overall system performance. &lt;br /&gt;
+We then explore how a number of &lt;strong&gt;fundamental parameters&lt;/strong&gt; impact the final prediction performance of our system.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=file%3A%2F%2F%2FUsers%2Fchenxiang%2FPapers%2FCTR%2Fpractical-lessons-from-predicting-clicks-on-ads-at-facebook.pdf&quot;&gt;hypothesis&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;1-模型结构&quot;&gt;1. 模型结构&lt;/h3&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/GBDT-LR/00-model.png&quot; style=&quot;width:50%;height:50%;&quot; /&gt;  
+&lt;br /&gt;
+图1 Hybrid model structure
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+在工业界，LR是CTR的常用模型，而模型的瓶颈主要在于特征工程（特征离散化、特征交叉等），因此模型开发人员需要在特征工程上花费大量的时间与精力。为了解决这个问题，该论文提出的一种模型结构：&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees + logistic regression&lt;/code&gt;，其中&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees&lt;/code&gt;用于feature transformation，而&lt;code class=&quot;highlighter-rouge&quot;&gt;logistic regression&lt;/code&gt;用于CTR预测。&lt;/p&gt;
+
+&lt;p&gt;该论文在数据集上对&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;logistic regression&lt;/code&gt;以及&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees + logistic regression&lt;/code&gt;这三种模型进行实验，结果如图2所示。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/GBDT-LR/01-results.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图2 模型对比结果
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+由图2可知，&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees + logistic regression&lt;/code&gt;模型的结果最优，其主要原因可能有以下几点：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;与人工特征工程相比，利用decision trees进行feature transformation更有效；&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees + logistic regression&lt;/code&gt;类似于stacking，在不过拟合的情况下，模型stacking的效果会优于单模型；&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;2-online-learning&quot;&gt;2. online learning&lt;/h3&gt;
+
+&lt;p&gt;论文中提到，&lt;code class=&quot;highlighter-rouge&quot;&gt;data freshness&lt;/code&gt;对模型的结果会有影响，如图3所示，delay越小，Normalized Entropy的值越小，即模型预测精度越高。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/GBDT-LR/02-freshness.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+图3 Normalized Entropy vs delay
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+因此，为了提升模型的指标，需要提高&lt;code class=&quot;highlighter-rouge&quot;&gt;data freshness&lt;/code&gt;，即进行&lt;code class=&quot;highlighter-rouge&quot;&gt;online learning&lt;/code&gt;，其工作流程如图4所示。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/GBDT-LR/03-online.png&quot; style=&quot;width:50%;height:50%;&quot; /&gt;  
+&lt;br /&gt;
+图4 online learning
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;
+一个&lt;code class=&quot;highlighter-rouge&quot;&gt;online learning&lt;/code&gt;模块主要涉及到&lt;strong&gt;实时特征提取&lt;/strong&gt;和&lt;strong&gt;模型实时训练&lt;/strong&gt;这两个部分，其中&lt;strong&gt;实时特征提取&lt;/strong&gt;部分对应于该论文中的&lt;code class=&quot;highlighter-rouge&quot;&gt;online data joiner&lt;/code&gt;，而在&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees + logistic regression&lt;/code&gt;模型结构中，&lt;strong&gt;模型实时训练&lt;/strong&gt;部分主要针对&lt;code class=&quot;highlighter-rouge&quot;&gt;logistic regression&lt;/code&gt;的近实时训练（&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees&lt;/code&gt;仅用于feature transformation，不需要实时训练）。&lt;/p&gt;
+
+&lt;h3 id=&quot;3-其他因素&quot;&gt;3. 其他因素&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Number of boosting trees&lt;/p&gt;
+
+    &lt;p&gt;影响feature transformation后新特征的维度&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Boosting feature importance&lt;/p&gt;
+
+    &lt;p&gt;用于评估特征的重要性，可用于特征筛选&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Historical features vs Contextual features&lt;/p&gt;
+
+    &lt;p&gt;测试结果表明，Historical features（历史操作行为特征）比Contextual features（上下文信息，如用户所使用的终端等）作用更大；而Contextual features可用于处理cold-start问题&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Sampling&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Uniform subsampling&lt;/li&gt;
+      &lt;li&gt;Negative down sampling&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;4-总结&quot;&gt;4. 总结&lt;/h3&gt;
+
+&lt;p&gt;模型层面：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Data freshness matters&lt;/li&gt;
+  &lt;li&gt;Transforming real-valued input features with boosted decision trees significantly increases the prediction accuracy of probabilistic linear classifiers&lt;/li&gt;
+  &lt;li&gt;LR with per-coordinate learning rate, which ends up being comparable in performance with BOPR, and performs better than all other LR SGD schemes under study&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;细节层面：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The tradeoff between the number of boosted decision trees and accuracy&lt;/li&gt;
+  &lt;li&gt;Boosted decision trees give a convenient way of doing feature selection by means of feature importance&lt;/li&gt;
+  &lt;li&gt;For ads and users with history, historical features provide superior predictive performance than context features&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;总体来说，该论文给出的&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees + logistic regression&lt;/code&gt;模型结构不但显著提升了CTR指标，而且在一定程度上减少了特征工程的工作量，该模型的几个优化点如下：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;在特征维数特别大或数据集特别大的情况下，使用&lt;code class=&quot;highlighter-rouge&quot;&gt;decision trees&lt;/code&gt;进行feature transformation性价比不高，即训练较耗时且效果不一定很好&lt;/li&gt;
+  &lt;li&gt;仍需要对Historical features做一定的特征工程&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;c1&quot;&gt;# 实现范例
+# 来源：http://scikit-learn.org/stable/auto_examples/ensemble/plot_feature_transformation.html
+&lt;/span&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;seed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;
+
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.datasets&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make_classification&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.linear_model&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LogisticRegression&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.ensemble&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GradientBoostingClassifier&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.preprocessing&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;OneHotEncoder&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.model_selection&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;train_test_split&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.metrics&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;roc_curve&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sklearn.pipeline&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make_pipeline&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;n_estimator&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make_classification&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n_samples&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;80000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 划分数据集
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X_test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_test&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;train_test_split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;test_size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;X_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X_train_lr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_train_lr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;train_test_split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                                            &lt;span class=&quot;n&quot;&gt;y_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                                            &lt;span class=&quot;n&quot;&gt;test_size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;grd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GradientBoostingClassifier&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n_estimators&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n_estimator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;grd_enc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;OneHotEncoder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;grd_lm&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LogisticRegression&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;grd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# GBDT
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd_enc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[:,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# GBDT feature transform
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd_lm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd_enc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;transform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_train_lr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[:,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_train_lr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# LR
+&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;y_pred_grd_lm&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grd_lm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;predict_proba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd_enc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;transform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[:,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))[:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# GBDT+LR做预测
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpr_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tpr_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;roc_curve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y_test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_pred_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;y_pred_grd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;predict_proba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X_test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# 只使用GBDT做预测
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpr_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tpr_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;roc_curve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y_test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_pred_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'k--'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpr_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tpr_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'GBT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpr_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tpr_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'GBT + LR'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlabel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'False positive rate'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ylabel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'True positive rate'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ROC curve'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ylim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'k--'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpr_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tpr_grd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'GBT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpr_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tpr_grd_lm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'GBT + LR'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xlabel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'False positive rate'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ylabel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'True positive rate'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ROC curve (zoomed in at top left)'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'best'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+</description>
+        <pubDate>Sun, 18 Nov 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/GBDT-LR-facebook.html</link>
+        <guid isPermaLink="true">http://localhost:4000/GBDT-LR-facebook.html</guid>
+        
+        
+        <category>papers</category>
+        
+      </item>
+    
+  </channel>
+</rss>

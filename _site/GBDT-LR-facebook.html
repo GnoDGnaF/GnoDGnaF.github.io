@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Practical Lessons from Predicting Clicks on Ads at Facebook (2014)</title>
+    <meta name="description" content="业精于勤荒于嬉；行成于思毁于随。
+">
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://localhost:4000/GBDT-LR-facebook.html">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-117320993-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-117320993-1');
+</script>
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">GnoDGnaF</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"
+          />
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"
+          />
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"
+          />
+        </svg>
+      </a>
+
+      <div class="trigger">
+         
+        <a class="page-link" href="/papers/">论文</a>
+               
+      </div>
+    </nav>
+
+  </div>
+</header>
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Practical Lessons from Predicting Clicks on Ads at Facebook (2014)</h1>
+    <p class="post-meta">Nov 18, 2018</p>
+  </header>
+
+  <article class="post-content">
+    <blockquote>
+  <p>In this paper we introduce a model which <strong>combines decision trees with logistic regression</strong>, outperforming either of these methods on its own by over <strong>3%</strong>, an improvement with significant impact to the overall system performance. <br />
+We then explore how a number of <strong>fundamental parameters</strong> impact the final prediction performance of our system.</p>
+</blockquote>
+
+<p><a href="chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=file%3A%2F%2F%2FUsers%2Fchenxiang%2FPapers%2FCTR%2Fpractical-lessons-from-predicting-clicks-on-ads-at-facebook.pdf">hypothesis</a></p>
+
+<h3 id="1-模型结构">1. 模型结构</h3>
+
+<center>
+<img src="../img/GBDT-LR/00-model.png" style="width:50%;height:50%;" />  
+<br />
+图1 Hybrid model structure
+</center>
+<p><br />
+在工业界，LR是CTR的常用模型，而模型的瓶颈主要在于特征工程（特征离散化、特征交叉等），因此模型开发人员需要在特征工程上花费大量的时间与精力。为了解决这个问题，该论文提出的一种模型结构：<code class="highlighter-rouge">decision trees + logistic regression</code>，其中<code class="highlighter-rouge">decision trees</code>用于feature transformation，而<code class="highlighter-rouge">logistic regression</code>用于CTR预测。</p>
+
+<p>该论文在数据集上对<code class="highlighter-rouge">decision trees</code>、<code class="highlighter-rouge">logistic regression</code>以及<code class="highlighter-rouge">decision trees + logistic regression</code>这三种模型进行实验，结果如图2所示。</p>
+
+<center>
+<img src="../img/GBDT-LR/01-results.png" style="width:70%;height:70%;" />  
+<br />
+图2 模型对比结果
+</center>
+<p><br />
+由图2可知，<code class="highlighter-rouge">decision trees + logistic regression</code>模型的结果最优，其主要原因可能有以下几点：</p>
+<ul>
+  <li>与人工特征工程相比，利用decision trees进行feature transformation更有效；</li>
+  <li><code class="highlighter-rouge">decision trees + logistic regression</code>类似于stacking，在不过拟合的情况下，模型stacking的效果会优于单模型；</li>
+</ul>
+
+<h3 id="2-online-learning">2. online learning</h3>
+
+<p>论文中提到，<code class="highlighter-rouge">data freshness</code>对模型的结果会有影响，如图3所示，delay越小，Normalized Entropy的值越小，即模型预测精度越高。</p>
+
+<center>
+<img src="../img/GBDT-LR/02-freshness.png" style="width:60%;height:60%;" />  
+<br />
+图3 Normalized Entropy vs delay
+</center>
+<p><br />
+因此，为了提升模型的指标，需要提高<code class="highlighter-rouge">data freshness</code>，即进行<code class="highlighter-rouge">online learning</code>，其工作流程如图4所示。</p>
+
+<center>
+<img src="../img/GBDT-LR/03-online.png" style="width:50%;height:50%;" />  
+<br />
+图4 online learning
+</center>
+<p><br />
+一个<code class="highlighter-rouge">online learning</code>模块主要涉及到<strong>实时特征提取</strong>和<strong>模型实时训练</strong>这两个部分，其中<strong>实时特征提取</strong>部分对应于该论文中的<code class="highlighter-rouge">online data joiner</code>，而在<code class="highlighter-rouge">decision trees + logistic regression</code>模型结构中，<strong>模型实时训练</strong>部分主要针对<code class="highlighter-rouge">logistic regression</code>的近实时训练（<code class="highlighter-rouge">decision trees</code>仅用于feature transformation，不需要实时训练）。</p>
+
+<h3 id="3-其他因素">3. 其他因素</h3>
+
+<ul>
+  <li>
+    <p>Number of boosting trees</p>
+
+    <p>影响feature transformation后新特征的维度</p>
+  </li>
+  <li>
+    <p>Boosting feature importance</p>
+
+    <p>用于评估特征的重要性，可用于特征筛选</p>
+  </li>
+  <li>
+    <p>Historical features vs Contextual features</p>
+
+    <p>测试结果表明，Historical features（历史操作行为特征）比Contextual features（上下文信息，如用户所使用的终端等）作用更大；而Contextual features可用于处理cold-start问题</p>
+  </li>
+  <li>
+    <p>Sampling</p>
+    <ul>
+      <li>Uniform subsampling</li>
+      <li>Negative down sampling</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="4-总结">4. 总结</h3>
+
+<p>模型层面：</p>
+
+<ul>
+  <li>Data freshness matters</li>
+  <li>Transforming real-valued input features with boosted decision trees significantly increases the prediction accuracy of probabilistic linear classifiers</li>
+  <li>LR with per-coordinate learning rate, which ends up being comparable in performance with BOPR, and performs better than all other LR SGD schemes under study</li>
+</ul>
+
+<p>细节层面：</p>
+
+<ul>
+  <li>The tradeoff between the number of boosted decision trees and accuracy</li>
+  <li>Boosted decision trees give a convenient way of doing feature selection by means of feature importance</li>
+  <li>For ads and users with history, historical features provide superior predictive performance than context features</li>
+</ul>
+
+<p>总体来说，该论文给出的<code class="highlighter-rouge">decision trees + logistic regression</code>模型结构不但显著提升了CTR指标，而且在一定程度上减少了特征工程的工作量，该模型的几个优化点如下：</p>
+
+<ul>
+  <li>在特征维数特别大或数据集特别大的情况下，使用<code class="highlighter-rouge">decision trees</code>进行feature transformation性价比不高，即训练较耗时且效果不一定很好</li>
+  <li>仍需要对Historical features做一定的特征工程</li>
+</ul>
+
+<hr />
+
+<p><br /></p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># 实现范例
+# 来源：http://scikit-learn.org/stable/auto_examples/ensemble/plot_feature_transformation.html
+</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_curve</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+
+<span class="n">n_estimator</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">80000</span><span class="p">)</span>
+<span class="c1"># 划分数据集
+</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_train_lr</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_train_lr</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span>
+                                                            <span class="n">y_train</span><span class="p">,</span>
+                                                            <span class="n">test_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">grd</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="n">n_estimator</span><span class="p">)</span>
+<span class="n">grd_enc</span> <span class="o">=</span> <span class="n">OneHotEncoder</span><span class="p">()</span>
+<span class="n">grd_lm</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+
+<span class="n">grd</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span> <span class="c1"># GBDT
+</span><span class="n">grd_enc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">grd</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">X_train</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">])</span> <span class="c1"># GBDT feature transform
+</span><span class="n">grd_lm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">grd_enc</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">grd</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">X_train_lr</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">y_train_lr</span><span class="p">)</span> <span class="c1"># LR
+</span>
+<span class="n">y_pred_grd_lm</span> <span class="o">=</span> <span class="n">grd_lm</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">grd_enc</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">grd</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]))[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="c1"># GBDT+LR做预测
+</span><span class="n">fpr_grd_lm</span><span class="p">,</span> <span class="n">tpr_grd_lm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_grd_lm</span><span class="p">)</span>
+
+<span class="n">y_pred_grd</span> <span class="o">=</span> <span class="n">grd</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="c1"># 只使用GBDT做预测
+</span><span class="n">fpr_grd</span><span class="p">,</span> <span class="n">tpr_grd</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_grd</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">'k--'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_grd</span><span class="p">,</span> <span class="n">tpr_grd</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'GBT'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_grd_lm</span><span class="p">,</span> <span class="n">tpr_grd_lm</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'GBT + LR'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">'False positive rate'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">'True positive rate'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">'ROC curve'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">'best'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">'k--'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_grd</span><span class="p">,</span> <span class="n">tpr_grd</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'GBT'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_grd_lm</span><span class="p">,</span> <span class="n">tpr_grd_lm</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'GBT + LR'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">'False positive rate'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">'True positive rate'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">'ROC curve (zoomed in at top left)'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">'best'</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></code></pre></figure>
+
+
+  </article>
+
+</div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+
+const gitment = new Gitment({
+  id: location.pathname,
+  owner: 'GnoDGnaF',
+  repo: 'GnoDGnaF.github.io',
+  oauth: {
+    client_id: 'f12d331d02e406bbc555',
+    client_secret: '6828bf6455b730e5e6bcea315d9583ee0e02f847',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments');
+
+</script>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!--h2 class="footer-heading">GnoDGnaF</h2-->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        <p class="copyright">
+		(c) Copyright all right reserved. <br>
+		本站所有内容的版权归作者所有，如需转载和使用请与作者联系，
+
+		</p>
+      </div>
+
+      <div class="footer-col  footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/GnoDGnaF">
+              <span class="icon  icon--github">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/>
+                </svg>
+              </span>
+
+              <span class="username">GnoDGnaF</span>
+            </a>
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-3">
+        <p class="text">业精于勤荒于嬉；行成于思毁于随。
+</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript">
+MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+</script>
+
+
+  </body>
+
+</html>

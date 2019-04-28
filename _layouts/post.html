@@ -1,0 +1,35 @@
+---
+layout: default
+---
+<div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title }}</h1>
+    <p class="post-meta">{{ page.date | date: "%b %-d, %Y" }}{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{% endif %}</p>
+  </header>
+
+  <article class="post-content">
+    {{ content }}
+  </article>
+
+</div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+
+const gitment = new Gitment({
+  id: location.pathname,
+  owner: 'GnoDGnaF',
+  repo: 'GnoDGnaF.github.io',
+  oauth: {
+    client_id: 'f12d331d02e406bbc555',
+    client_secret: '6828bf6455b730e5e6bcea315d9583ee0e02f847',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments');
+
+</script>
