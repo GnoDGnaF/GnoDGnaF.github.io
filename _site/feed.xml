@@ -6,9 +6,166 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 29 Apr 2019 00:08:12 +0800</pubDate>
-    <lastBuildDate>Mon, 29 Apr 2019 00:08:12 +0800</lastBuildDate>
+    <pubDate>Thu, 09 May 2019 00:09:39 +0800</pubDate>
+    <lastBuildDate>Thu, 09 May 2019 00:09:39 +0800</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>Deep Interest Network for Click-Through Rate Prediction (2017)</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;In this paper, we introduce a new proposed model, &lt;strong&gt;Deep Interest Network (DIN)&lt;/strong&gt;, which represents users’ &lt;font color=&quot;blue&quot;&gt;diverse&lt;/font&gt; interests with an interest distribution and designs an attention-like network structure to &lt;font color=&quot;blue&quot;&gt;locally activate&lt;/font&gt; the related interests according to the candidate ad, which is proven to be effective and significantly outperforms traditional model.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=https%3A%2F%2Farxiv.org%2Fpdf%2F1706.06978.pdf&quot;&gt;hypothesis&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;1-系统简介&quot;&gt;1. 系统简介&lt;/h3&gt;
+
+&lt;p&gt;用户登录一个e-commerce网站后，系统会进行如下响应：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;checks his historical behavior data&lt;/li&gt;
+  &lt;li&gt;
+    &lt;font color=&quot;blue&quot;&gt;generates candidate ads by &lt;b&gt;matching module&lt;/b&gt;&lt;/font&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;font color=&quot;red&quot;&gt;predicts the click probability of each ad and selects appropriate ads which can attract attention (click) by &lt;b&gt;ranking module&lt;/b&gt;&lt;/font&gt;
+  &lt;/li&gt;
+  &lt;li&gt;logs the user reactions given the displayed ads&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;用户与ad的交互行为具有两个特点：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Diversity&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;Users are interested in different kind of goods&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Local activation&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;Only a part of users’ historical behaviors are relevant to the candidate ad&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;该论文将用户的行为group到4个分组下，如图1所所示：&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/00-features.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图1 Feature Representations and Statistics in our display advertising system
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note that in our setting there are no combination features. We capture the interaction of features with deep network.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在CTR预测中，feature interactions是影响模型性能的关键因素，需要大量的先验知识，而该论文利用deep network完成这部分工作。&lt;/p&gt;
+
+&lt;p&gt;另外，该论文使用&lt;strong&gt;GAUC&lt;/strong&gt;作为CTR预测的评测指标，其具体含义请参考论文，此处不做分析。&lt;/p&gt;
+
+&lt;h3 id=&quot;2-模型结构&quot;&gt;2. 模型结构&lt;/h3&gt;
+
+&lt;p&gt;模型的出发点：&lt;font color=&quot;blue&quot;&gt;our system need an effective approach to extract users’ interests from the rich &lt;b&gt;historical behavior&lt;/b&gt; while building the click-through rate (CTR) prediction model&lt;/font&gt;。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/01-model.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图2 Model Architecture
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;base-model&quot;&gt;Base Model&lt;/h4&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Base Model&lt;/code&gt;是一种常见的deep network模型，如图2（左）所示，其主要包括两步：1）transfer each sparse id feature into a embedded vector space；2）apply MLPs to fit the output。该模型的一个问题在于，为了处理用户不定长的历史行为，需要对embedding后的向量进行pooling，该操作会损失很多有效信息。&lt;/p&gt;
+
+&lt;h4 id=&quot;deep-interest-network&quot;&gt;Deep Interest Network&lt;/h4&gt;
+
+&lt;p&gt;用户行为的&lt;code class=&quot;highlighter-rouge&quot;&gt;diversity&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;local activation&lt;/code&gt;特性，与NMT的任务很类似，在decode时句子中不同的单词其重要性不同。为了解决这个问题，NMT引入&lt;code class=&quot;highlighter-rouge&quot;&gt;attention mechanism&lt;/code&gt;（Attention network (can be viewed as a special designed pooling layer) learns to &lt;font color=&quot;blue&quot;&gt;assign attention scores to each word in the sentence&lt;/font&gt;, which in other words follows the diversity structure of data）。&lt;/p&gt;
+
+&lt;p&gt;在CTR场景下，表征用户兴趣的embedding vector应该随candidate ads的不同而变化（embedding vector of user interest should vary according to different candidate ads, that is, it should follow the local activation structure）。为此，设计了一种新的网络结构，&lt;strong&gt;Deep Interest Network（DIN）&lt;/strong&gt;，如图2（右）所示，其主要特点是计算用户behavior ids的embedding vector时考虑了ad embedding vector的影响，计算过程如图3所示，该计算单元又称为&lt;code class=&quot;highlighter-rouge&quot;&gt;activation unit&lt;/code&gt;，其输入是embedding of behavior id和distributed representation of ads，输出是attention score。&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/06-equation.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图3 user behavior ids embedding
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;总之，&lt;code class=&quot;highlighter-rouge&quot;&gt;Deep Interest Network&lt;/code&gt;是在&lt;code class=&quot;highlighter-rouge&quot;&gt;Base Model&lt;/code&gt;的基础上，引入了&lt;font color=&quot;red&quot;&gt;activation unit&lt;/font&gt;，以对user behavior data进行更有效的distributed representation learning。&lt;/p&gt;
+
+&lt;p&gt;除了模型结构外，为了避免过拟合（很容易在large scale parameters和sparse inputs的情况下出现），该论文在Activation Function以及Regularization上也进行了改进：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Data Dependent Activation Function &lt;code class=&quot;highlighter-rouge&quot;&gt;Dice&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/07-activation.png&quot; style=&quot;width:30%;height:30%;&quot; /&gt;  
+&lt;br /&gt;
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Adaptive Regularization&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/08-regularization.png&quot; style=&quot;width:60%;height:60%;&quot; /&gt;  
+&lt;br /&gt;
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;另外，论文提到了模型的实现环境：X-Deep Learning (XDL)，一个multi-GPU distributed training platform，支持model-parallelism 和 data-parallelism。&lt;/p&gt;
+
+&lt;h3 id=&quot;3-实验&quot;&gt;3. 实验&lt;/h3&gt;
+
+&lt;h4 id=&quot;visualization&quot;&gt;Visualization&lt;/h4&gt;
+
+&lt;p&gt;图4为商品embedding后的分布情况，其中形状代表商品类别，颜色代表CTR预测结果（以一个年轻妈妈用户为例）。&lt;/p&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/03-visualization.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图4 Visualization of embeddings of goods in DIN model
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;图5展示了用户历史行为的attention score与candidate ad的关系，可知，与candidate ad越相似的行为得分越高。&lt;/p&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/02-attention.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图5 Illustration of locally activation property in DIN model
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;regularization&quot;&gt;Regularization&lt;/h4&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/04-regularization.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图6 Performance of reduction of overfitting with different regularizations
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;模型比较&quot;&gt;模型比较&lt;/h4&gt;
+&lt;center&gt;
+&lt;img src=&quot;../img/DIN/05-result.png&quot; style=&quot;width:70%;height:70%;&quot; /&gt;  
+&lt;br /&gt;
+图7 Performance of DIN and Base Model
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;4-总结&quot;&gt;4. 总结&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;提供了一种对具有diversity和local activation特点的用户历史数据进行特征提取的解决方案&lt;/li&gt;
+  &lt;li&gt;end-to-end learning，无需做大量的特征工程&lt;/li&gt;
+  &lt;li&gt;提出一种adaptive regularization技术，用于解决在训练industrial deep networks过程中出现的overfitting问题&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Wed, 26 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/DIN.html</link>
+        <guid isPermaLink="true">http://localhost:4000/DIN.html</guid>
+        
+        
+        <category>papers</category>
+        
+      </item>
     
       <item>
         <title>DeepFM: A Factorization-Machine based Neural Network for CTR Prediction (2017)</title>

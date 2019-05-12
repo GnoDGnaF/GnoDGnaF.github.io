@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Deep Interest Network for Click-Through Rate Prediction (2017)</title>
+    <meta name="description" content="业精于勤荒于嬉；行成于思毁于随。
+">
+
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="canonical" href="http://localhost:4000/DIN.html">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-117320993-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-117320993-1');
+</script>
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">GnoDGnaF</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"
+          />
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"
+          />
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"
+          />
+        </svg>
+      </a>
+
+      <div class="trigger">
+         
+        <a class="page-link" href="/papers/">论文</a>
+               
+      </div>
+    </nav>
+
+  </div>
+</header>
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Deep Interest Network for Click-Through Rate Prediction (2017)</h1>
+    <p class="post-meta">Dec 26, 2018</p>
+  </header>
+
+  <article class="post-content">
+    <blockquote>
+  <p>In this paper, we introduce a new proposed model, <strong>Deep Interest Network (DIN)</strong>, which represents users’ <font color="blue">diverse</font> interests with an interest distribution and designs an attention-like network structure to <font color="blue">locally activate</font> the related interests according to the candidate ad, which is proven to be effective and significantly outperforms traditional model.</p>
+</blockquote>
+
+<p><a href="chrome-extension://bjfhmglciegochdpefhhlphglcehbmek/content/web/viewer.html?file=https%3A%2F%2Farxiv.org%2Fpdf%2F1706.06978.pdf">hypothesis</a></p>
+
+<h3 id="1-系统简介">1. 系统简介</h3>
+
+<p>用户登录一个e-commerce网站后，系统会进行如下响应：</p>
+<ol>
+  <li>checks his historical behavior data</li>
+  <li>
+    <font color="blue">generates candidate ads by <b>matching module</b></font>
+  </li>
+  <li>
+    <font color="red">predicts the click probability of each ad and selects appropriate ads which can attract attention (click) by <b>ranking module</b></font>
+  </li>
+  <li>logs the user reactions given the displayed ads</li>
+</ol>
+
+<p>用户与ad的交互行为具有两个特点：</p>
+<ul>
+  <li>
+    <p><strong>Diversity</strong></p>
+
+    <p>Users are interested in different kind of goods</p>
+  </li>
+  <li>
+    <p><strong>Local activation</strong></p>
+
+    <p>Only a part of users’ historical behaviors are relevant to the candidate ad</p>
+  </li>
+</ul>
+
+<p>该论文将用户的行为group到4个分组下，如图1所所示：</p>
+
+<center>
+<img src="../img/DIN/00-features.png" style="width:70%;height:70%;" />  
+<br />
+图1 Feature Representations and Statistics in our display advertising system
+</center>
+<p><br /></p>
+
+<blockquote>
+  <p>Note that in our setting there are no combination features. We capture the interaction of features with deep network.</p>
+</blockquote>
+
+<p>在CTR预测中，feature interactions是影响模型性能的关键因素，需要大量的先验知识，而该论文利用deep network完成这部分工作。</p>
+
+<p>另外，该论文使用<strong>GAUC</strong>作为CTR预测的评测指标，其具体含义请参考论文，此处不做分析。</p>
+
+<h3 id="2-模型结构">2. 模型结构</h3>
+
+<p>模型的出发点：<font color="blue">our system need an effective approach to extract users’ interests from the rich <b>historical behavior</b> while building the click-through rate (CTR) prediction model</font>。</p>
+
+<center>
+<img src="../img/DIN/01-model.png" style="width:70%;height:70%;" />  
+<br />
+图2 Model Architecture
+</center>
+<p><br /></p>
+
+<h4 id="base-model">Base Model</h4>
+
+<p><code class="highlighter-rouge">Base Model</code>是一种常见的deep network模型，如图2（左）所示，其主要包括两步：1）transfer each sparse id feature into a embedded vector space；2）apply MLPs to fit the output。该模型的一个问题在于，为了处理用户不定长的历史行为，需要对embedding后的向量进行pooling，该操作会损失很多有效信息。</p>
+
+<h4 id="deep-interest-network">Deep Interest Network</h4>
+
+<p>用户行为的<code class="highlighter-rouge">diversity</code>和<code class="highlighter-rouge">local activation</code>特性，与NMT的任务很类似，在decode时句子中不同的单词其重要性不同。为了解决这个问题，NMT引入<code class="highlighter-rouge">attention mechanism</code>（Attention network (can be viewed as a special designed pooling layer) learns to <font color="blue">assign attention scores to each word in the sentence</font>, which in other words follows the diversity structure of data）。</p>
+
+<p>在CTR场景下，表征用户兴趣的embedding vector应该随candidate ads的不同而变化（embedding vector of user interest should vary according to different candidate ads, that is, it should follow the local activation structure）。为此，设计了一种新的网络结构，<strong>Deep Interest Network（DIN）</strong>，如图2（右）所示，其主要特点是计算用户behavior ids的embedding vector时考虑了ad embedding vector的影响，计算过程如图3所示，该计算单元又称为<code class="highlighter-rouge">activation unit</code>，其输入是embedding of behavior id和distributed representation of ads，输出是attention score。</p>
+
+<center>
+<img src="../img/DIN/06-equation.png" style="width:70%;height:70%;" />  
+<br />
+图3 user behavior ids embedding
+</center>
+<p><br /></p>
+
+<p>总之，<code class="highlighter-rouge">Deep Interest Network</code>是在<code class="highlighter-rouge">Base Model</code>的基础上，引入了<font color="red">activation unit</font>，以对user behavior data进行更有效的distributed representation learning。</p>
+
+<p>除了模型结构外，为了避免过拟合（很容易在large scale parameters和sparse inputs的情况下出现），该论文在Activation Function以及Regularization上也进行了改进：</p>
+
+<ul>
+  <li>Data Dependent Activation Function <code class="highlighter-rouge">Dice</code></li>
+</ul>
+<center>
+<img src="../img/DIN/07-activation.png" style="width:30%;height:30%;" />  
+<br />
+</center>
+<p><br /></p>
+<ul>
+  <li>Adaptive Regularization</li>
+</ul>
+<center>
+<img src="../img/DIN/08-regularization.png" style="width:60%;height:60%;" />  
+<br />
+</center>
+<p><br /></p>
+
+<p>另外，论文提到了模型的实现环境：X-Deep Learning (XDL)，一个multi-GPU distributed training platform，支持model-parallelism 和 data-parallelism。</p>
+
+<h3 id="3-实验">3. 实验</h3>
+
+<h4 id="visualization">Visualization</h4>
+
+<p>图4为商品embedding后的分布情况，其中形状代表商品类别，颜色代表CTR预测结果（以一个年轻妈妈用户为例）。</p>
+<center>
+<img src="../img/DIN/03-visualization.png" style="width:70%;height:70%;" />  
+<br />
+图4 Visualization of embeddings of goods in DIN model
+</center>
+<p><br /></p>
+
+<p>图5展示了用户历史行为的attention score与candidate ad的关系，可知，与candidate ad越相似的行为得分越高。</p>
+<center>
+<img src="../img/DIN/02-attention.png" style="width:70%;height:70%;" />  
+<br />
+图5 Illustration of locally activation property in DIN model
+</center>
+<p><br /></p>
+
+<h4 id="regularization">Regularization</h4>
+<center>
+<img src="../img/DIN/04-regularization.png" style="width:70%;height:70%;" />  
+<br />
+图6 Performance of reduction of overfitting with different regularizations
+</center>
+<p><br /></p>
+
+<h4 id="模型比较">模型比较</h4>
+<center>
+<img src="../img/DIN/05-result.png" style="width:70%;height:70%;" />  
+<br />
+图7 Performance of DIN and Base Model
+</center>
+<p><br /></p>
+
+<h3 id="4-总结">4. 总结</h3>
+
+<ul>
+  <li>提供了一种对具有diversity和local activation特点的用户历史数据进行特征提取的解决方案</li>
+  <li>end-to-end learning，无需做大量的特征工程</li>
+  <li>提出一种adaptive regularization技术，用于解决在训练industrial deep networks过程中出现的overfitting问题</li>
+</ul>
+
+  </article>
+
+</div>
+<div id="comments"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script type="text/javascript">
+
+const gitment = new Gitment({
+  id: location.pathname,
+  owner: 'GnoDGnaF',
+  repo: 'GnoDGnaF.github.io',
+  oauth: {
+    client_id: 'f12d331d02e406bbc555',
+    client_secret: '6828bf6455b730e5e6bcea315d9583ee0e02f847',
+  },
+  // ...
+  // For more available options, check out the documentation below
+})
+
+gitment.render('comments');
+
+</script>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!--h2 class="footer-heading">GnoDGnaF</h2-->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col  footer-col-1">
+        <p class="copyright">
+		(c) Copyright all right reserved. <br>
+		本站所有内容的版权归作者所有，如需转载和使用请与作者联系，
+
+		</p>
+      </div>
+
+      <div class="footer-col  footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/GnoDGnaF">
+              <span class="icon  icon--github">
+                <svg viewBox="0 0 16 16">
+                  <path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/>
+                </svg>
+              </span>
+
+              <span class="username">GnoDGnaF</span>
+            </a>
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col  footer-col-3">
+        <p class="text">业精于勤荒于嬉；行成于思毁于随。
+</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript">
+MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+</script>
+
+
+  </body>
+
+</html>
